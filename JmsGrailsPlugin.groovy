@@ -90,11 +90,6 @@ class JmsGrailsPlugin {
     }
 
     def doWithApplicationContext = { applicationContext ->
-        listenerConfigs.each { serviceClassName, serviceClassListenerConfigs ->
-            serviceClassListenerConfigs.each {
-                startListenerContainer(it, applicationContext)
-            }
-        }
         //Fetch and set the asyncReceiverExecutor
         try {
             def asyncReceiverExecutor = applicationContext.getBean('jmsAsyncReceiverExecutor')
@@ -237,9 +232,6 @@ class JmsGrailsPlugin {
                 newBeans.beanDefinitions.each { n, d ->
                     event.ctx.registerBeanDefinition(n, d)
                 }
-                serviceListenerConfigs.each {
-                    startListenerContainer(it, event.ctx)
-                }
             }
         }
 
@@ -297,12 +289,6 @@ class JmsGrailsPlugin {
             newBeans.beanDefinitions.each { n, d ->
                 event.ctx.registerBeanDefinition(n, d)
             }
-
-            listenerConfigs.each { name, serviceListenerConfigs ->
-                serviceListenerConfigs.each { listenerConfig ->
-                    startListenerContainer(listenerConfig, event.ctx)
-                }
-            }
         }
 
         // We need to trigger a reload of the jmsService so it gets any new beans
@@ -327,9 +313,5 @@ class JmsGrailsPlugin {
     def unregisterListener(listenerConfig, appCtx) {
         LOG.info("removing JMS listener beans for ${listenerConfig.serviceBeanName}.${listenerConfig.listenerMethodName}")
         listenerConfig.removeBeansFromContext(appCtx)
-    }
-
-    def startListenerContainer(listenerConfig, applicationContext) {
-        applicationContext.getBean(listenerConfig.listenerContainerBeanName).start()
     }
 }
